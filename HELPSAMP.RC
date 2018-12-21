@@ -1,0 +1,68 @@
+/*----------------------------------
+   HELPSAMP.RC resource script file
+  ----------------------------------*/
+
+#include <os2.h>
+#include "helpsamp.h"
+
+POINTER ID_RESOURCE helpsamp.ico
+
+MENU ID_RESOURCE
+     {
+     SUBMENU "~File",         IDM_FILE
+          {
+          MENUITEM "~New",               IDM_NEW
+          MENUITEM "~Open...",           IDM_OPEN
+          MENUITEM "~Save",              IDM_SAVE
+          MENUITEM "Save ~As...",        IDM_SAVEAS
+          MENUITEM SEPARATOR
+          MENUITEM "A~bout HelpSamp...", IDM_ABOUT
+          }
+
+     SUBMENU "~Boxes",        IDM_BOXES
+          {
+          MENUITEM "~Dialog Box...",        IDM_DIALOG
+          MENUITEM "~Message Box 1...",     IDM_MESSAGE_1
+          MENUITEM "~Message Box 2...",     IDM_MESSAGE_2
+          }
+
+     MENUITEM "F1=Help", 0x00, MIS_TEXT|MIS_BUTTONSEPARATOR|MIS_HELP
+     }
+
+DLGTEMPLATE IDD_ABOUT LOADONCALL MOVEABLE DISCARDABLE 
+BEGIN
+    DIALOG "", 300, 32, 32, 200, 88, FS_NOBYTEALIGN | FS_DLGBORDER | 
+                WS_CLIPSIBLINGS | WS_SAVEBITS
+    BEGIN
+        CONTROL "HelpSamp", -1, 10, 64, 180, 8, WC_STATIC, SS_TEXT | 
+                DT_CENTER | DT_TOP | WS_GROUP | WS_VISIBLE
+        CONTROL 1, -1, 8, 56, 2, 2, WC_STATIC, SS_ICON | WS_VISIBLE
+        CONTROL "Sample Help Program-HELPLIB", -1, 10, 40, 180, 8, WC_STATIC, 
+                SS_TEXT | DT_CENTER | DT_TOP | WS_GROUP | WS_VISIBLE
+        CONTROL "Copyright (C) Andy Levine , 1989", -1, 10, 32, 180, 8, 
+                WC_STATIC, SS_TEXT | DT_CENTER | DT_TOP | WS_GROUP | WS_VISIBLE
+        CONTROL "OK", 1, 25, 9, 40, 16, WC_BUTTON, BS_PUSHBUTTON | BS_DEFAULT | 
+                WS_GROUP | WS_TABSTOP | WS_VISIBLE
+        CONTROL "Help", IDD_ABOUT_HELP, 119, 9, 40, 16, WC_BUTTON, BS_PUSHBUTTON | 
+                BS_HELP | WS_GROUP | WS_TABSTOP | WS_VISIBLE
+    END
+END
+
+STRINGTABLE
+BEGIN
+        DEFAULT_HELP,   "About HELPLIB"
+        MSGBOX_ID1,     "Message Box 1"
+        MSGBOX_ID2,     "Message Box 2"
+        IDM_FILE,       "File (pull down)"
+        IDM_NEW,        "New"
+        IDM_OPEN,       "Open"
+        IDM_SAVE,       "Save"
+        IDM_SAVEAS,     "Save As"
+        IDM_ABOUT,      "About HELPSAMP"
+        IDM_BOXES,      "Help In Boxes"
+        IDM_DIALOG,     "Help In Dialog Boxes"
+        IDM_MESSAGE_1,  "Help In Message Boxes"
+        IDM_MESSAGE_2,  "Help In Message Boxes"
+        IDD_ABOUT_HELP, "About Box"
+END
+

@@ -1,0 +1,307 @@
+.context List Categories
+.list
+HELPSAMP Help
+.context h.default
+.context About HELPSAMP
+.topic General
+This is the main screen of help that first shows when you first open
+the database under QuickHelp. It is also the text that will show
+under PM using the help DLL, HELPLIB.DLL, a number of ways:
+
+\b1)\p It should appear when the user presses F1 in your application
+without having a specific help request. This is the default help.
+
+\b2)\p When the Help dialog box is already open, if the user presses the
+F1 key, as the DLL chains it way up the help tree, it will eventually
+chain back to here.
+
+It is the highest level help possible. I have also referenced it as
+the 'About HELPSAMP' topic.
+
+.context HELPSAMP Help
+.context HELPINDEX
+.topic INDEX OF TOPICS
+.list
+About HELPSAMP
+About Box
+File (pull down)
+Boxes (pull down)
+Chaining Help
+Colors in Help
+Help In Boxes
+Help In Dialog Boxes
+Help In Message Boxes
+Keystroke Help
+New
+Open
+Save
+Save As
+
+.context About Box
+.category About HELPSAMP
+.topic About Box
+This is the help screen displayed when F1 is pressed when the About
+Dialog box is displayed. It also will display when the HELP
+pushbutton is pressed in this box.
+
+The About Box displays version information about HELPSAMP
+
+.context File (pull down)
+.category About HELPSAMP
+.topic File (pull down)
+Use the choices on the FILE pull-down file oriented procedures
+
+\bNew\p     \
+Creates a new file.
+
+\bOpen\p     \
+Opens an existing file.
+
+\bSave\p     \
+Saves file under current file name.
+
+\bSave As\p   \
+Saves file under new name.
+
+\bAbout\p  \
+Displays copyright and version information about HelpSamp.
+
+.context New
+.category File (pull down)
+.topic New
+Here is where you would put help text describing the \bNew\p menu
+option. By pressing the F1 key from here you will chain back to the
+\bFile\p menu help screen. This is because the category of this
+context points back there.
+
+.context Open
+.category File (pull down)
+.topic Open
+Here is where you would put help text describing the \bOpen\p menu
+option. By pressing the F1 key from here you will chain back to the
+\bFile\p menu help screen. This is because the category of this
+context points back there.
+
+.context Save
+.category File (pull down)
+.topic Save
+Here is where you would put help text describing the \bSave\p menu
+option. By pressing the F1 key from here you will chain back to the
+\bFile\p menu help screen. This is because the category of this
+context points back there.
+
+.context Save As
+.category File (pull down)
+.topic Save As
+Here is where you would put help text describing the \bSave As\p menu
+option. By pressing the F1 key from here you will chain back to the
+\bFile\p menu help screen. This is because the category of this
+context points back there.
+
+.context Boxes (pull down)
+.context Help In Boxes
+.category About HELPSAMP
+.topic Boxes (pull down)
+Use the choices on the BOXES pull-down to select miscellaneous
+functions that will demontrate how to get help within dialog
+boxes and message boxes.
+
+\bDialog Box...\p  \
+Displays a dialog box
+and its corresponding help button. Choosing HELP in the dialog box
+will display dialog specific help.
+
+\bMessage Box...\p  \
+Displays a message box
+and its corresponding help button. Choosing HELP in the message box
+will display message specific help.
+
+.context Help In Dialog Boxes
+.category Help In Boxes
+.topic Help In Dialogs
+This is the help text displayed when you highlight the \bDIALOG
+BOXES\p menu choice under the \bBOXES\p menu choice and press the 
+F1 key. You can also display this text by choosing the Help
+In Dialog Boxes entry in the INDEX listbox.
+
+Choosing the \bDialog Box...\p menu entry will display a dialog
+box with a help button. Pressing F1 when that dialog box is displayed
+will display context sensitive help for that box.
+
+.context Help In Message Boxes
+.category Help In Boxes
+.topic Help In Message Boxes
+This is the help text displayed when you highlight the \bMessage
+Box 1\p or \bMessage Box 2\p menu choice under the \bBOXES\p menu
+choice and press the F1 key. You can also display this
+text by choosing the Help In Message Boxes entry in the INDEX listbox.
+
+Choosing the \bMessage Box 1...\p or \bMessage Box 2...\p menu entry 
+will display a message box with a help button. Pressing F1 when
+that message box is displayed will display context sensitive help
+for that box.
+
+.context Message Box 1
+.category Help In Message Boxes
+.topic Box 1
+Here is the help displayed when F1 is pressed (or pushbutton is
+activated) in \bMessage Box 1\p.
+
+Notice this help is \unot\p in the index of topics. It can only
+be referenced by a direct call from your program. This is great
+for error messages.
+
+.context Message Box 2
+.category Help In Message Boxes
+.topic Box 2
+Here is the help displayed when F1 is pressed (or pushbutton is
+activated) in \bMessage Box 2\p.
+
+Notice this help is \unot\p in the index of topics. It can only
+be referenced by a direct call from your program. This is great
+for error messages.
+
+.context KEYS
+.context Keystroke Help
+.category About HELPSAMP
+.topic Keys
+The keys are arranged in groups. Use:
+
+-\bsystem\p keys to switch between programs \
+-\bwindow\p keys to move
+around in a program window  \
+-\bpop-up window\p keys to select 
+and edit in pop-up windows.
+
+When two keys are joined by a plus sign (+), it means that you should
+hold down the first key while you press the second key.
+
+SYSTEM KEYS
+
+switch to next windowed program = \bAlt+tab\p or click on window
+
+switch to next program (including full-screen programs) = \bAlt+Esc\p
+
+switch to Task Manager = \bCtrl+Esc\p or double-click on icon
+
+
+WINDOW KEYS
+
+go to/from system menu = \bShift+Esc\p or Alt+spacebar
+
+go to/from system menu of text window = \bShift+Esc\p or Alt
+
+go to/from action bar = \bF10\p or Alt
+
+move among choices on action bar and pulldowns = \barrow\p keys
+
+move to choice on action bar = \bletter\p that is underlined in
+choice name
+
+select choice on pull-down = \bletter\p that is underlined in
+choice name
+
+scroll one line in list = \barrow\p keys or click on scroll bar
+arrows
+
+go to first item in list = \bHome\p
+
+go to last item in list = \bEnd\p
+
+go to next list entry whose name starts with a certain letter = 
+\bfirst letter of any entry name\p
+
+scroll contents of window up one page = \bPage Up\p or F7 or click
+on scroll bar above slider
+
+scroll contents of window down one page = \bPage Down\p or F8 or
+click on scroll bar below slider
+
+scroll contents of window left one page = \bCtrl+Page Up\p, Shift+F7,
+or click on scroll bar to left of slider
+
+scroll contents of window right one page = \bCtrl+Page Down\p, 
+Shift+F8 or click on scroll bar to right of slider
+
+move window = \bAlt+F7\p or drag window title bar
+
+size window = \bAlt+F8\p or drag window border
+
+minimize window = \bAlt+F9\p or click on "down arrow" icon
+
+maximize window = \bAlt+F10\p or click on "up arrow" icon
+
+restore window = \bAlt+F5\p or click on "double arrow" icon
+
+close window = \bF3\p of Alt+F4 or double-click on system menu
+
+get help = \bF1\p or hold mouse button down over choice and press F1
+
+keys help (while in help) = \bF9\p or click on KEYS pushbutton
+
+help index (while in help) = \bF11\p or click on INDEX pushbutton
+
+go to/from help and program = \bAlt+F6\p or click on window
+
+
+POP-UP WINDOW KEYS
+
+move to another field in the group = \barrow\p keys or click on field
+
+move to another group of field = \btab\p or click on group
+
+set checkbox on/off = \bSpacebar\p or click on checkbox
+
+remove pop-up window = \bEsc\p or click on CANCEL pushbutton
+
+complete pop-up window = \bEnter\p or click on appropriate pushbutton
+
+
+EDITING KEYS
+
+beginning of field = \bHome\p or Ctrl+left arrow key
+
+end of field = \bEnd\p or Ctrl+right arrow key
+
+delete character to the right of the cursor = \bDel\p
+
+delete character to the left of the cursor = \bLeft arrow delete\p
+(backspace) key
+
+erase to end of field = \bCtrl+Del\p
+
+select text in a field = \bShift+arrow\p keys or drag
+
+delete selected text completely = \bDel\p
+
+delete selected text, but copy it to clipboard = \bShift+Del\p
+
+copy selected text to clipboard = \bCtrl+Ins\p
+
+copy selected text from clipboard to selected position = 
+\bShift+Ins\p
+
+replace selected text with clipboard contents = \bShift+Ins\p
+
+.context Colors in Help
+.category About HELPSAMP
+.topic Colors
+You can highlight your help text in many ways using HELPLIB. Below
+you will see examples of the different colors available:
+
+NORMAL text looks like this
+
+\bBOLD text shows up like this\p
+
+\iITALICS text shows up like this\p
+
+\uUNDERLINE text like this\p
+
+\b\iThe combination of BOLD & ITALICS\p
+
+Any other combination of \\b, \\i, and \\u will result in text
+that you can't see!!
+
+.context EOF
+
+

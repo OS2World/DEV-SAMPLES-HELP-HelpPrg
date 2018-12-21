@@ -1,0 +1,17 @@
+#--------------------
+# HELPSAMP make file
+#--------------------
+
+helpsamp.obj : helpsamp.c helpsamp.h
+     cl -c -Zi -G2sw -W3 helpsamp.c
+
+helpsamp.res : helpsamp.rc helpsamp.h helpsamp.ico
+     rc -r helpsamp
+
+helpsamp.exe : helpsamp.obj helpsamp.def
+     link/co helpsamp.obj, /align:16, NUL, os2.lib slibcep helplib/NOD, helpsamp
+     rc helpsamp.res
+
+helpsamp.exe : helpsamp.res
+     rc helpsamp.res
+

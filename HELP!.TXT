@@ -1,0 +1,1313 @@
+OUTLINE OF THIS DOCUMENT
+------------------------
+
+I. Introduction
+        1. Background on HELP!
+        2. Archive Contents
+        3. What YOU need
+        4. The sample program - HELPSAMP
+        5. Distributing HELPLIB.DLL & MSHELP.DLL
+        6. Acknowledgments
+
+II. Using HELPLIB.DLL
+        1. The Help File
+                a) Creating the Help file
+                        1. Dot commands
+                        2. Colors
+                        3. Mandatory .contexts
+                        4. Tips on creating the help file
+                        5. Using HELPMAKE
+                b) Testing the Help File
+                        1. Using QuickHelp To test
+
+        2. Your Application
+                a) WM_HELP Messages
+                b) HelpBox Function Call
+                        1. Prototype
+                        2. Explanation of parameters
+                c) The Help Hook
+                        1. installing
+                        2. Calls To..
+                        3. removing
+                        4. The HelpHook procedure in detail
+                d) Making the help context sensitive
+                        1. STRINGTABLE in RC file
+                        2. The F1 key
+                        3. Menu Items
+                        4. Dialog Boxes
+                        5. Message Boxes
+                e) compiling and testing
+
+III. Final Words
+        1. Distribution (again!!)
+        2. I want to see your apps!!!
+        3. The future for HELPLIB.DLL
+        4. Contacting me
+
+
+I. INTRODUCTION
+---------------
+
+
+I.1. Background on HELP!
+
+The idea of HELP! came to me when I was coding a couple of PM apps at
+the same time. I noticed the neat Help boxes Microsoft provided for
+Start Programs, Control Panel, Task Manager, etc., and thought it
+would be nice to have a facility like that in my programs. Its one
+thing to have all those fun HELP buttons in your programs, its
+another story doing something useful with them. I hunted around the
+zillions of files that OS/2 loaded on to my machine, hoping to find a
+.DLL or a sample program with some code I could "borrow". NO LUCK!! I
+did however stumble across the file MSHELP.DLL, part of the QuickHelp
+files. After EXEHDR'ing this puppy, I knew I was on the right track.
+I went back to the documentation, two versions old (SDK v1.03) at the
+time, and found some (slim) documentation and the sample program, LQH
+(little Quick Help). After v1.03 of the SDK, Microsoft stopped
+sending out this documentation, sample program, and even the import
+library, MSHELP.LIB. But I had enough to go with, albeit in some
+parts crudely, and ended up with the .DLL I was looking for, and
+hopefully it will "help" you too!
+
+I tried to make implementing Help in your apps as simple as possible.
+It is only 1 function call, the addition of a help hook in your
+module, and the defining of some strings in your resource file. The
+most difficult part of the whole process is the creation of the help
+file itself. Only you can decide what topics you want help on, how to
+cross reference topics, the verbage you want etc. I've also included
+a sample program, HELPSAMP, with its source and help file as a guide
+to using HELPLIB.DLL. The sample program shows most of the highlights
+of the .DLL, but is by no means inclusive of all you can do. It shows
+how to get context sensitive help for menu items, dialog boxes, and
+message boxes. The sample help file shows examples of how to set up
+cross references ( sometimes referred to as chaining or
+backtracking), use of colors, and more. It would behoove you to print
+out a copy of HELPSAMP.C, HELPSAMP.H and HELPSAMP.RC as a guide while
+you read this text. I will refer to code bits frequently.
+
+Some of the features of HELPLIB.DLL include:
+
+- Your help files are compatible with QuickHelp!! 
+
+  I am still working on reverse compatibility, i.e. bringing QH files
+  into HELPLIB. Without documentation on the function calls in
+  MSHELP.DLL, this has proved frustrating, but I am getting there.
+
+- It looks, works, acts, smells, barks, and sings just like the help
+  boxes inherent to OS/2.
+
+  things like text reformatting to width of help window, resizeable
+  window, window moves independently of client application
+  etc.
+
+- Easy to implement.
+
+- Changing help in your application now involves just changing your
+  help file ( in most cases).
+
+- liberal use of color to emphasize help text
+
+The best way to see what it can do is to play around with the sample
+app. More on this later.
+
+
+I.2. Archive contents:
+
+SAMPLE APP - HELPSAMP
+---------------------
+HELPSAMP                - make file
+HELPSAMP.C              - SOURCE FILE
+HELPSAMP.DEF            - DEFINITION FILE
+HELPSAMP.EXE            - EXECUTABLE
+HELPSAMP.H              - INCLUDE HEADER FILE
+HELPSAMP.HLP            - ENCODED HELP FILE
+HELPSAMP.ICO            - ICON FILE 
+HELPSAMP.RC             - RESOURCE FILE
+HELPSAMP.TXT            - ASCII VERSION OF HELP FILE
+
+       
+DLL FILES
+---------
+HELPLIB.DLL             - HELP DLL
+HELPLIB.LIB             - IMPORT LIBRARY FOR HELPLIB.DLL
+
+
+HELP!.DOC               - THIS DOCUMENT
+
+
+
+I.3. What you need
+
+You will need to have certain files and utility programs in order to
+utilize HELPLIB.DLL. All of them are included in the PM SDK or
+TOOLKIT. Some are also available with MS compilers or with the
+QuickHelp disk set that is purchased separately if you didn't buy the
+SDK or TOOLKIT.
+
+Requirements:
+
+1) OS/2 compatible compiler
+
+2) HELPMAKE.EXE  
+
+   This is the utility that allows you to make QuickHelp compatible
+   help files. Comes with SDK, TOOLKIT, QuickHelp, and some of the
+   compilers. 
+
+   I am using version 1.02.014 dated 2/27/89. ( came with commercial
+   version of toolkit). I have also used the version that came with
+   1.06 of the SDK, and have coded HELPLIB.DLL to work with its
+   output, but it doesn't have all the options the newer version
+   does. The newer version compresses files a little more. More on
+   this later.
+
+3) MSHELP.DLL
+
+   This is the "Help engine" used by QuickHelp to find topics,
+   decompress them, etc. HELPLIB.DLL makes calls to this DLL to
+   access your help file. 
+
+   Microsoft keeps changing this DLL. The changes between v1.06 SDK
+   and 1.1 (SDK and TOOLKIT) forced me to change code. At present, I
+   will only work with the latest version (1.1 SDK and TOOLKIT). The
+   file is dated 2/24/89. I am working to make HELPLIB.DLL more 
+   backwards compatible.
+  
+Optional:
+
+4) QuickHelp
+
+   QuickHelp isn't really needed, but will REALLY help when you are
+   creating your help file. Using QH to test your file before you
+   implement HELPLIB in your app will really speed things up and
+   solve alot a problems that could arise later.
+
+
+I.4) The sample program - HELPSAMP
+
+As mentioned earlier, the best way to see what HELPLIB can do is to
+play around with the sample application. After playing with it, take
+a look at the source. You'll see the guts of implementing HELPLIB are
+all in function HelpHook. This function is easily transported into
+any application to use as a model.
+
+
+***To install the sample application copy the .EXE file anywhere you
+want. The file HELPLIB.DLL must be in a directory your LIBPATH is
+pointing to (usually \os2\dll) or in the same directory as
+HELPSAMP.EXE. Finally, the file HELPSAMP.HLP MUST be placed in the
+directory \os2\system. This is a limitation due only to the fact I
+hardcoded the file name into the sample program !!
+
+
+I.5) Distributing HELPLIB.DLL & MSHELP.DLL
+
+When you finish implementing help in your application and are getting
+ready to distribute your app, remember to add HELPLIB.DLL and
+MSHELP.DLL in our distribution files!! Also any installation program
+you write ( or installation instructions you give) should put these
+files in the appropriate place.
+
+I have no problem with you distributing HELPLIB.DLL with your app.
+MSHELP.DLL is another story though.
+
+I have spoken to MANY people at Microsoft about the legalities of
+distributing one of their DLL's with an application. In short, the
+concensus seems to be as long as you are not writing an app like an
+OS/2 toolkit, or a QuickHelp replacement, (basically anything that
+would take business away from them selling SDKs, toolkits, QuickHelp
+etc) it is OK. I originally was going to include MSHELP.DLL in this
+archive, but as of this writing (7/6/89), no one has given me final
+absolute approval. PLEASE USE DISCRETION IN DISTRIBUTING MSHELP.DLL!!
+If you have any doubt about whether or not Microsoft would approve,
+either don't do it, or call Microsoft. BY NO MEANS distribute
+MSHELP.DLL with ANY other QuickHelp files (application or HELP). By
+itself, the DLL is pretty useless to a user, which is why I think
+they have given at least tacit approval.  It would also be REAL nice
+(read that MANDATORY) if somewhere in your program or documentation
+you gave Microsoft the credit they deserve for MSHELP.DLL. 'Nuff sed!!
+
+(P.S. If ANYONE from Microsoft is reading this, PLEASE contact me and
+let me know if what I said above is OK!!)
+
+
+I.6) Acknowledgments
+
+This is my place to say THANKS to lots of people who in some way or
+another have helped in creating HELPLIB:
+
+        - Microsoft, for MSHELP.DLL, the Help boxes in OS/2 that
+          were used as a model for HELPLIB, and for OS/2 in general
+          ( It makes coding REAL FUN again !!).
+
+        - Noel Bergman, (Compuserve SysOp-MSSYS) for his patience and
+          LOTS of suggestions and ideas.
+
+        - Charles Petzold, for his book "Programming the OS/2
+          Presentation Manager" (a godsend), and miscellaneous
+          tips given on CompuServe.
+
+        - WHOMEVER coded LQH (Little Quick Help) in v1.03 of the
+          OS/2 SDK. This was an invaluable source for accessing QH
+          files, and I openly confess to "borrowing" a couple routines!
+
+
+
+II. USING HELPLIB.DLL
+---------------------
+
+II.1) The Help File
+
+As mentioned earlier, the real key to implementing help in your
+applications is the work put in up front creating your help file. I
+tried to make the creation of the help file as similar to the
+creation of QuickHelp files as possible. Although at present
+HELPLIB.DLL does not support ALL dot commands, it does support the
+REAL important ones. Also, I only know of 1 minor incompatibility in
+using your files in QH, and it is optional anyway.  This section
+will discuss the creation and testing of the help file, and tips I
+found in avoiding problems. For an in depth discussion on the
+creation of help files, take a look at the manual "QuickHelp Users
+Guide" or the section on using HELPMAKE included with some compilers.
+
+
+II.1.a) Creating the Help File
+
+I broke down the file creation explanation into the discussion of the
+various pieces of the help file. In this section we'll look at dot
+commands, addition of colors for emphasis, mandatory contexts, and
+the use of the helpmake utility. It would help if you had a printed
+copy of the file HELPSAMP.TXT, as I will use it as a reference often.
+
+
+II.1.a.1) Dot commands
+
+Dot commands will control how help topics are displayed, how topics
+are cross referenced, whether of not the help text is a list, and
+most importantly, what the search string for a topic will be.
+HELPLIB.DLL supports a subset of the QuickHelp dot commands. I plan
+to implement the full set in some form or another at some time.
+
+The format of the dot commands is the same as for QH. "All dot
+commands must be in lowercase letters and must be preceded by a dot
+(period). Each dot command is on its own line, and the dot must be
+the first character on the line."
+
+
+II.1.a.1.a) .context
+
+The .context command is used to separate portions of the help
+text into topics. The format of the context command is:
+
+        .context <topic-name>
+
+where <topic-name> is the text that will reference the topic.
+
+HELPLIB.DLL always searches for the entire <topic-name> and it is
+case sensitive, so topic names Print, print, Printing, and Printing
+in the background will all be considered different. All text between
+a .context command and the next .context is considered to be the text
+for the specified topic. 
+
+Optionally, you can specify multiple .context commands before any
+help text. This is so you can reference the same help text using a
+variety of search strings. A good example of this in HELPSAMP is the
+keystroke help text. It has both the context KEYS and the context
+Keystroke Help.
+
+
+TIP:
+Put all your .context commands one after another at the top of any
+help topic, before any other dot commands. This makes your file easier
+to read, and easier to add text to any topic.
+
+
+II.1.a.1.b) .topic
+
+The .topic command controls the text that will be displayed at the
+top of a help screen ( below the title bar & above the help text !).
+In QuickHelp, this is the text that appears in the little box at the
+bottom of the screen. 
+
+Format of the .topic command is
+
+        .topic <topic text>
+
+<topic text> is always displayed at the top of the window, centered.
+
+HELPLIB.DLL will append the word "Help" after the string specified by
+.topic, so don't make the last word Help!! It won't append Help
+though for .contexts that are to be treated as lists (.list).
+
+TIP:
+The .topic command is not mandatory, but HIGHLY recommended. If you
+have multiple .context commands pointing to the same help text, the
+.topic commands ensure the title above the text is the same.
+
+
+II.1.a.1.c) .category
+
+The .category command is used to reference help topics back to some
+other help context.  Format of the .category command is:
+
+        .category <string>
+
+where <string> should EXACTLY match a .context topic-name somewhere
+in the file.
+
+QuickHelp utilizes the .category command by allowing the user to
+press the T key to search for the category of any context.
+HELPLIB.DLL uses the .category in a similar manner. If a .category
+command is associated with a context, a pushbutton in the second
+position will appear, labelled "F1=Help". Pressing F1 at this point
+will force HELPLIB.DLL to search for  <string> as a context. If it is
+found, it is displayed as any other topic. If it is not found, the
+default context is displayed. ANY context displayed without an associated
+.category command will not offer the user the F1 help button.
+
+A good example of the .category command can be followed by starting
+at the .context "Message Box 2". This is the help displayed when F1
+is pressed when Message box 2 is displayed. Pressing F1 from this
+help will display the help text for "Help in Message Boxes". Help in
+message boxes in turn has a .category of "Help in Boxes" and "Help In
+Boxes" then chains to the context "About HELPSAMP".
+
+TIP:
+.category commands are not mandatory, but again are HIGHLY
+recommended. I usually refer all topics somewhere. If there is no
+logical "higher" help context, I usually chain to the default
+context. I only make the default topic and list contexts the only
+topics without .category commands.
+
+PLEASE ONLY 1 .category per topic!!!
+
+
+II.1.a.1.d) .list
+
+The .list command is used to specify that the topic text that follows
+should be displayed in a list box. There are no parameters to the
+.list command. The .list command MUST precede any help text in the
+topic.
+
+You will always have at least 2 .list contexts in your file. (more on
+this in the mandatory .contexts section). You can chain list boxes
+(.category commands), but this is really not necessary.
+
+The list box acts like most PM list boxes. It has a scroll bar to
+scroll your list entries, double clicking an entry will force a
+search on the text of the entry, any character key will take you to
+the first entry starting with that letter, and it has a full keyboard
+interface (arrow keys, page up/down, home/end).
+
+HELPLIB.DLL does NOT sort the entries in the list. They are put in
+the list box in the same order you have them in the file. This is so
+you can do things like indenting:
+
+        About Help
+        Menu Help
+           File Menu
+           Main Menu
+           Sub Menu
+        Save Help
+
+TIP:
+
+Keep your .contexts short, as these are going to be the entries in
+your INDEX. The default window width is about 50 characters wide.
+
+
+II.1.a.2) Colors
+
+Colors help add emphasis to your help text. They are useful to 
+distinguish subtopic headers from the text. HELPLIB.DLL allows you to
+add color to your text through the use of \ commands. These are the
+same \ commands used by QuickHelp.
+
+Normal help text is displayed in dark blue. Bold text will display in
+cyan, italics text in red and underline text in magenta. You can also
+combine the bold and italics attributes to get brown.
+
+The slash commands are as follows:
+\b - bold
+\i - italics
+\u - underline
+\b\u - bold and underline
+
+The \p command turns off all attributes. See the .context "Colors in
+Help" in HELPSAMP.TXT for an example of how to use the \ commands, and
+to see what the colors look like.
+
+Don't use any other combination of the \ attributes or you will end
+up with text that is invisible!
+
+
+
+II.1.a.3) Mandatory .contexts
+
+Although HELPLIB.DLL is fairly flexible in what it will allow you in
+our help file, there are a few things it MUST have in order to work
+properly. Some of the mandatory .contexts help in assuring
+compatibility with QuickHelp, others are for my convenience only.
+
+PLEASE make sure you read this section carefully. Most problems I
+have seen in implementing HELPLIB.DLL have been because one of the
+mandatory .contexts was missing or misspelled. Remember, .context
+commands ARE case sensitive, and they MUST appear exactly as
+specified here. WEIRD things can occur if one of the .context
+commands is missing
+
+II.1.a.3.a) .context h.default
+
+This context is the topic that will be displayed when a search is
+made for a topic and it is not found. It is also the text that will
+be displayed when QuickHelp first opens your file. I also make this
+the topic that is displayed when F1 is pressed from my application
+and no specific help is available. Finally, it is the topic that I
+eventually chain all other help topics to.
+
+Usually the h.default context is just one of the .contexts associated
+with some help text. For example, I also cross reference h.default to
+About HELPSAMP in the sample program.
+
+The text should probably be general help about your application or
+help on how to use help.
+
+I have also made my INDEX the default if I always wanted users always
+to go back to the help index. Its up to you!
+
+
+II.1.a.3.b) .context HELPINDEX
+
+The HELPINDEX context is a context of .list type. It contains the
+entries of the INDEX OF CONTENTS list, all of the topics you want to
+allow your users to reference directly. It will be displayed when F11
+is pressed.
+
+I usually also reference this context by whatever I have in the List
+Categories context (see below). For example, HELPINDEX is also
+referenced by HELPSAMP Help in the HELPSAMP application.
+
+Remember, list categories do not sort the entries as they insert them
+into the list box. Be sure to list them in the order you want them to
+appear in the list.
+
+Also remember, the entries in the list are used to search the
+database for topics of help. This means the entries in HELPINDEX must
+match a .context entry in your help file exactly, or you will get the
+default help. For example, in the sample application, I have put an
+in entry called "Chaining Help" that I never defined. When this entry
+is chosen, the default help (h.default of About HELPSAMP) is
+displayed. Alot of the problems you may experience are because your
+list entries don't match .contexts exactly.
+
+II.1.a 3.c) .context KEYS 
+
+This is the text displayed for keystroke help. The button F9=Keys
+always searches for this context.
+
+The text in the sample application is the same as the keys text for
+Start Text and the Task Manager. You can use it or make up
+application specific keystroke yourself.
+
+In the sample application, I have also reference this topic by the
+context Keystroke Help. This isn't really necessary but it does show
+you a good example of multiple .context's for any topic.
+
+II.1.a.3.d) .context List Categories
+
+This context is for compatibility with QuickHelp (kind of). This
+context under QuickHelp list the names that will display under the
+Categories pull down menu for your application. Unlike QuickHelp,
+which allows you many items in this list, HELPLIB.DLL only uses the
+first entry. Whatever you put in the first entry is what will appear
+in the title bar of your help window.
+
+I also reference my HELPINDEX context with whatever I put in the
+first list entry. This is so when you choose your application help
+from the categories menu under QuickHelp, the index of help topics
+will appear.
+
+
+II.1.a.4) Tips on Creating the Help file
+
+Here are some various things I have found about creating help files.
+Some of them are useful, some are common sense, and some point out
+limitations.
+
+1) The length of any help topic is limited to 64K, same as in
+QuickHelp. Remember, we are writing Help screens, not your users
+manual. Try to keep your topics of reasonable length. The length of
+the enclosed KEYS context is probably as long as you really want to
+get.
+
+2) Keep the number of color changes within any specific topic to a
+minimum. The way I parse color attributes limits to about 400 color
+changes per topic. Remember that changing from normal to bold and back
+will use up 3 of the 400. Use color for emphasis, not carnival
+effects!
+
+3) Forcing Adjoining Lines
+Since HELPLIB.DLL wordwraps all help text, it is hard to force
+sub-headers within your text. QuickHelp on the other hand displays
+your text exactly as you type it in. This is the one incompatibility
+between QH an HELPLIB I mentioned earlier.
+
+Sometimes you may want to force two short lines of text one right
+after the other:
+
+File
+Here is text about the file menu
+
+I originally had to put a spare blank line in between them in the
+text file, but then they appeared as below:
+
+File
+
+Here is text about the file menu
+
+
+I wanted to get rid of the blank line. The way to do this is to put a
+\ after a few spaces on the first line. THis will force a spare line
+feed to appear in you compressed file. Unfortunately, it doesn't look
+real pretty in QuickHelp as they ignore this spare line-feed. One
+other problem that appears is the helpmake utility counts the
+character as just another character and keeps incrementing the
+character count for the line with the next line. The helpmake
+utility will holler your line is too long and truncate it. The way
+to get around this is to make the second line fairly short and
+continue it on the next line. Since HELPLIB.DLL keeps reading until
+it finds a blank line, it will word wrap the third line with the
+second line. For a good example of how to implement this feature can
+be seen in the HELPSAMP.TXT file under the File (pull down) context
+and the KEYS context.
+
+4) I found it useful to add an End of file context at the very end of
+the file. Sometimes helpmake wouldn't correctly mark end of file, and
+I had problems retrieving the last real topic. To solve this I added
+the .context EOF after the text for the last topic.
+
+
+II.1.a.5) Using helpmake
+
+After completing your help file, you must index it and compress it
+using the helpmake utility.  I am not going to go into detail about
+using the helpmake utility.  The Microsoft documentation is real good
+about this. In this section I will discuss the parameters to use when
+creating files for use by HELPLIB.DLL.
+
+
+The parameters you use will be different depending on the version of
+helpmake you are using. The newer version of helpmake support a /t
+(terse) parameter that translate your . command to a shorter internal
+version. This version was supplied with the 1.1 sdk and the toolkit.
+Older version do not support this terse form. HELPLIB.DLL should
+support both version of helpmake.
+
+Newer versions should invoke helpmake as follows:
+
+helpmake /a: /e15 /v9 /t /o<outfile.hlp> <infile.txt>
+
+
+Older versions should omit the /t and change the /a: parameter with
+/a. 
+
+helpmake /a. /e15 /v9 /o<outfile.hlp> <infile.txt>
+
+See your helpmake documentation for a complete description of what
+all the helpmake parameters are.
+
+
+
+II.1.b) Testing your help file
+
+The best way to test your help file is to use Quickhelp. If you don't
+have QuickHelp, you will have to wait to test your file until you
+have modified your application. After compressing your file, you
+might want to copy the .HLP file to wherever your QH variable is
+pointing to. This way when you start QH, it will automatically open
+your file, and you won't have to open it ( providing you have the
+latest version of QH).
+
+Here is a quick list of things to look for when you test your file
+under QH.
+
+1) Open the file.
+As mentioned earlier, if you are using the latest version of QH and
+the .HLP file is in your help path, QH will open it automatically for
+you. If it is not in the path, or you are using an older version of
+QH, you will have to open it yourself. Be sure to pass it the entire
+drive/path/filename/extension specification. Older versions had
+problems unless you do.
+
+2) Check the categories drop down.
+You will know your file is open and QH knows it is there by checking
+the categories drop down. Whatever you put in the List Categories
+context should appear as a new category on the pull down. If it is
+not there, try to reopen the file again. If it still doesn't appear,
+make sure you have the .context List Categories in your file.
+
+3) Test each item in your help index.
+Choose each item in your help index and make sure it retrieves the
+correct text. If they don't, CHECK YOUR SPELLING!! Also make sure you
+actually have the .context commands that match your entries in the
+file.
+
+WARNING!!!  Older versions of QH only look at the first word in a
+list entry string when it goes to search for another context. If you
+keep getting contexts not found or the wrong text, add new .contexts
+to your file that are only 1 word long. You can remove them later.
+
+4) Test your help chaining
+Test the chaining of your help by pressing 'T' when a topic is
+displayed. You should chain to the .categories specified in each
+.context. 
+
+WARNING!! Once again, older versions of QH only look at the first
+word when chaining help. Be sure to check your .context's and your
+.category's if you change them.
+
+
+II.2) Adding Help to your Application
+
+Now to the fun part! If you have taken the time to create your help
+file and have tested it thoroughly, you're in the home stretch. If
+you didn't, shame on you! Do not pass go, do not collect 200 dollars.
+
+Alot of what I will touch on in this section is pretty repetitive
+stuff if you have read the sections on Help in the OS/2 Programmers
+reference manuals. Refer to these manuals for any questions you may
+have. I will also refer to HELPSAMP.C, .RC, and .H frequently, so
+have a copy handy.
+
+Most of the code you will put in your program you can borrow from the
+sample application and tailor to your needs. This should help cut
+down development time.
+
+
+II.2.A) WM_HELP Messages
+
+All requests for help in your PM app in some way or another will end
+up generating a WM_HELP message. Unfortunately, not all help messages
+will come to your client window procedure (like those generated by
+menu help). There are ways around this, though. 
+
+WM_HELP messages are generated in many ways. Menu items with style
+MIS_HELP, pushbuttons of  BS_HELP, and message boxes of style MB_HELP
+will all generate WM_HELP message. The parameters of the help message
+will help you determine the source of the message.
+
+How you deal with these help messages is up to you. The rest of this
+document will show you one way, through the installation of a help
+hook.  By installing a hook for all help messages, processing of help
+in centralized in one place.
+
+
+
+II.2.B) HelpBox Function call
+
+Through the use of HELPLIB.DLL, your program can create a help window
+with just one function call. The function is HelpBox and its
+prototype is as follows:
+
+BOOL APIENTRY HelpBox(HWND hwndCallerFrame,
+                      HWND hwndActive,
+                      HAB  hAB,
+                      PSZ  pszHelpFile, 
+                      PSZ  pszSearch);
+
+Be sure to include this as a forward declaration in your program.
+HELPSAMP has it in it .h file
+
+The parameters to HelpBox are as follows:
+
+hwndCallerFrame: 
+
+This is the handle to your frame window. It is returned to in your
+WinCreateStdWindow call. Please be sure you pass the correct handle,
+as HELPLIB uses this to create a child window of this window. VERY
+strange things WILL happen if you pass the wrong handle. For example,
+the window may open the first time, but never again.
+
+
+hwndActive:
+
+This is the handle to the window that is active at the time help is
+requested. Most of the time, this will actually be the handle to a
+pushbutton window or the menu. HELPSAMP.C calls WinQueryActiveWindow
+to retrieve this parameter while calling HelpBox. This parameter is
+passed so HELPLIB.DLL knows who to return the focus to.
+
+
+hAB:
+
+This is the anchor block handle of your program. You got this from
+your WinInitialize call somewhere in the beginning of your program.
+
+
+pszHelpFile:
+
+This is a pointer to a string which contains the name of your help
+file.
+
+This name MUST include full drive, path, filename and extension
+information. How you get this name is up to you. I hardcoded it in
+the HELPSAMP program. That probably is NOT how you want to do it. A
+much cleaner way would be to retrieve it from the OS2.ini file.
+During your program installation, remember to have the user put it in
+the directory you want, or if you write an installation program just
+go and update the .ini file yourself.
+
+If HELPLIB.DLL cannot find your help file, a message box will be
+displayed, and you will get a FALSE return code.
+
+At this point in time, I only check the file name the first time you
+call HelpBox. What this means is you can't change help files on the
+fly. I plan to change this in the near future.
+
+
+pszSearch:
+
+This is the context you want to display help on. The string passed
+MUST match a .context in your help file. If it does not, the
+h.default context topic will be displayed instead.
+
+HELPSAMP.C shows one way to insure the strings passed will match your
+contexts. I used strings in my RC file, created from my HELPINDEX,
+and load the appropriate string once I have determined what I want
+help on. More on this later.
+
+
+When you link your program, be sure to link it with HELPLIB.LIB
+(which you have already copied to your \lib  directory, right?) to
+resolve the external reference to HelpBox.
+
+
+II.2.C) The Help Hook
+
+As mentioned earlier, the installation of a help hook in your program
+will ease the installation of help in your program considerably. In
+short, if you ignore ALL WM_HELP messages in your app by passing them
+on to the default window procedure, the will end up going to your
+help hook procedure. In this way, you can deal with all help requests
+in one central location. I have found only 1 place where I have to
+intercept the WM_HELP message to get correct context sensitive help.
+This is in a dialog box, and only if they access help through the F1
+key. I'll describe this situation when I deal with context sensitive
+help later on.
+
+To use a help hook you must do three things:
+        1) install the help hook
+        2) call the help hook (this is done  for you!)
+        3) remove the help hook before terminating
+
+II.2.C.a) Installing the Help hook
+
+I usually install the help hook right before I enter my main message
+processing loop. You use the function WinSetHook to install the hook.
+The HELSAMP program does this in main with the following code:
+
+        .
+        .
+
+        WinSetHook(hab, hmq, HK_HELP, (PFN)HelpHook, NULL);
+        .
+        .
+where HK_HELP is the type of hook to set, and HelpHook is the name of
+the function that will act as the hook.
+
+
+II.2.C.b) Calls to the Help Hook
+Calls to the help hook when help is requested is automatic. DON'T
+call this function (HelpHook) yourself!! All you need to do is not
+process WM_HELP messages in your application. Pass them on the 
+default window procedure, and OS/2 will call the help hook for you.
+
+Be sure to include a forward declaration to the help hook function in
+your header file. 
+
+II.2.C.c) Removing the Help Hook
+
+Before you terminate your application, be sure to remove the help
+hook you installed. You do this with the WinReleaseHook function.
+HELPSAMP does this in main after the message processing loop is
+terminated:
+
+        .
+        .
+        WinReleaseHook(hab, hmq, HK_HELP, (PFN)HelpHook, NULL);
+        .
+        .
+
+
+II.2.C.d) The HelpHook Procedure in detail
+
+This section will dissect HELPSAMP's help hook procedure, HelpHook,
+(catchy name, huh!) in detail. I would help to familiarize yourself
+with hooks, by reading the HOOKS section and HELP section in the OS/2
+Programmers reference manuals.
+
+
+HelpHook is really nothing more than a giant multi-tiered case
+statement. The parameters to HelpHook end up telling you where help
+was requested from. We will use these parameters to retrieve the
+proper search context string, to provide context sensitive HElp.
+Finally, HelpHook call HELPLIB.DLL's function HelpBox (described
+earlier) to open up the help window.
+
+HELPSAMPs HelpHook function only has two local variables,
+pszHelpTopic, and usStringNum. pszHelpTopic will end up being the
+search string passed to HelpBox as the topic for the requested help.
+usStringNum is the number of the string in the programs resource
+file. I always prime this to DEFAULT_HELP (0) so I will always load
+some kind of string.
+
+The first level of the case statement is based on the parameter
+usMode. usMode tells us the origin of the help message. It has one
+three possible values, HLPM_MENU, HLPM_FRAME, and HLPM_WINDOW. See
+your OS/2 Programmers reference or QuickHelp for a detailed description
+of what these values mean. In short, HLPM_MENU means the message
+originated from a menu, HLPM_FRAME and HLPM_WINDOW means the message
+originated in a window.
+
+The next level of the case statement is based on the parameter of
+idTopic. What idTopic contains depends on the value of usMode. It
+will usually contain the identifier of the submenu or of the frame
+window when help was called.
+
+The last level of the case statement is based on the parameter
+idSubTopic. Once again, what idSubTopic contains depends on the value
+of usMode. It usually resolves to the selected menu item or the
+window that has focus when help is requested.
+
+Using these parameters we can identify exactly what state the user
+was in when they requested help. Since I give all the help strings in the
+resource file the same identifier as the menu item/
+pushbutton/message box that they represent, I assign usStringNum the
+value of either idTopic or idSubTopic ( more on this in the next
+section). 
+
+Once I know what string number I want to load,  I load the string
+using WinLoadString into pszHelpTopic. Finally, I call HelpBox with
+the appropriate parameters.
+
+To obtain the active window handle when help was called, the second
+parameter of HelpBox is actually a call to WinQueryActiveWindow. This
+is so HELPLIB.DLL knows who to restore the focus to when the user
+dismisses the help box.
+
+Clear as mud, right! Look over this section again, and look through
+the HelpHook code. The next section deals with how we made the help
+context sensitive.
+
+
+
+II.2.D) Making the help context sensitive
+
+The help hooks giant case statement is what really made the help
+context sensitive. By loading the correct value in usStringNum, we
+loaded the appropriate search string that was passed on to HelpBox.
+But what do the values of usStringNum really point to?  They all
+point to strings in the resource file.
+
+II.2.D.1) STRINGTABLE in the RC file
+
+Towards the end of the RC file you will find the stringtable defined
+for HELPSAMP. The identifiers of the strings in the table are the
+same exact identifiers used in defining the resources themselves. For
+example, every menu item defined in the main menu has a corresponding
+string identified by the menu id. Every help button in every dialog
+box has a string, and every message box with a help button has a
+string. Additionally, the DEFAULT_HELP identifier is associated with a
+string.
+
+The strings associated with these identifiers are the .contexts you
+created in your help file. EVERY help topic in your file should have
+some sort of reference in your stringtable. Most of the entries in
+your string table will be the entries in your index. Notice however
+you can have search strings for topics NOT in your INDEX. For
+example, the entries MSGBOX_ID1 and MSGBOX_ID2 are not in your index.
+The ONLY way the user will ever see the text for the .context Message
+Box 1 or 2 is to press the Help button while the message box is open.
+
+Also notice many identifiers can point to the same topic. For
+example, IDM_MESSAGE_1 and IDM_MESSAGE_2 both will display the same
+help text, "Help in Message boxes". This make sense though.
+IDM_MESSAGE_1 and IDM_MESSAGE_2 are menu items that open message
+boxes. If a user highlights one of the menu options, then presses F1,
+help text for "help in message boxes" appear!
+
+Be sure to include the identifier DEFAULT_HELP with the .context for
+your default help somewhere in your stringtable. Remember the
+HelpHook primes the sting number variable to default help.
+
+One thing to be real careful of. By using your resource identifiers
+as the identifiers of string table entries, you MUST be careful every
+single resource identifier you create has a unique ID. Sometimes I
+will create a menu identifier with an id of 100 and a dialog box with
+the identifier 100. This normally works just fine as the identifiers
+won't conflict with each other. However, in this case we would try to
+load the string with identifier 100 in both cases if help was
+requested. This is probably not what you want.
+
+
+II.2.D.2) The F1 key
+
+The F1 key will, by default, generate a WM_HELP message if you use
+the system default keyboard accelerator. PLEASE don't remap this key
+to anything else!!
+
+You can add the F1=Help menu option to your main menu by adding the
+line
+
+     MENUITEM "F1=Help", 0x00, MIS_TEXT|MIS_BUTTONSEPARATOR|MIS_HELP
+
+to your menu resource in the RC file. Notice the menu item style
+MIS_HELP. This tells the system to generate a WM_HELP message when
+this menu item is selected. No other menu items in HELPSAMP have this
+menu style!!
+
+II.2.D.3) Help for Menu Items
+
+Menu items are probably the easiest things to get help on. When a
+user highlights a menu item (not selects, merely highlights) and
+presses the F1 key, a WM_HELP message is generated. Your window
+procedure will not get this message. You MUST have a help hook
+installed if you want to give help on menu items.
+
+The usMode of a help message generated when a menu item is
+highlighted will be HLPM_MENU. The second parameter, idTopic, will be
+the menu identifier of the submenu containing the selected item.
+Finally the third parameter will be the selected menu item id, unless
+the submenu itself is selected, in which case it will be -1.
+
+Following a quick example using HELPSAMP:
+         .
+         .
+     switch(usMode)
+     {
+         case HLPM_MENU:
+             switch(idTopic)
+             {
+                 /* List all your High Level menu items here */
+                 case IDM_FILE:
+                 case IDM_BOXES:
+                     switch(idSubTopic)                     
+                     {
+                         case 0xFFFF:        /* menu bar itself highlighted */
+                             usStringNum = idTopic;
+                             break;
+
+                         default:
+                             usStringNum = idSubTopic;
+                     }        
+                     break;                    
+
+                 default:
+                     usStringNum = DEFAULT_HELP;
+                     break;
+             }
+             break;
+
+
+         case HLPM_WINDOW:
+             switch(idTopic)
+             {
+         .
+         .
+
+
+Say the user highlights the Open menu option under the File submenu,
+then presses F1. HelpHook will be called with usMode = HLPM_MENU.
+
+The next switch statement will have idTopic equal to IDM_FILE. Since
+it is one of the menu options we will give help on, we fall into the
+next switch statement, checking the subtopic. idSubTopic will contain
+the id IDM_OPEN, so we now know the user want help on the open
+subtopic. Since in HELPSAMP we give help on ALL available submenus,
+we fall into the default case, assigning usStringNum to IDM_OPEN.
+
+Falling all the way out of the case, we reach the WinLoadString
+function call which will load the string "Open" into pszHelpTopic.
+This is exactly what we want!! Finally HelpBox is called, directing
+it to display help on the .context "Open".
+
+If the example was just a little different, say they highlighted the
+File submenu instead of an option beneath File, the idSubTopic would
+have been -1. In this case, we know the user wanted help on the File
+menu itself, and usStringNum would be assigned idTopic or IDM_FILE.
+We then would have loaded string IDM_FILE, "File (pull down)", and
+called HelpBox with a different context.
+
+HELPSAMP is pretty clean in the way it deals with help for menu
+items.  It is clean ONLY because I have identified help for every
+menu option, and just default the subtopic to the chosen menu option
+if the submenu itself is not chosen. You do not have to do this. You 
+can choose to list every single menu option separately, with every
+option of a submenu beneath it. It makes your case statement VERY
+large and tends to be confusing. An example of this can be found in
+the OS/2 Programmers Reference, Vol 1. in the chapter on Help.
+
+
+II.2.D.3) Help for Dialog Boxes
+
+Help for dialog boxes is much the same as help for menu items,
+although there are a few little tricks involved.
+
+When a user presses a button in a dialog box that has the style
+BS_HELP, a WM_HELP message is generated and is sent to the dialog
+window procedure. Normally you will just pass this message on to the
+WinDefDlgProc as is. There is one small exception to this I will
+discuss in a minute.
+
+The usMode of the help message generated will usually be HLPM_WINDOW.
+I say usually because the pushbutton in your dialog box USUALLY is a
+child of the dialog box, and your dialog box is NOT the client window
+of the frame window. This is true most of the time unless your client
+window IS the dialog box itself.
+
+Assuming you do get a help message with usMode HLPM_WINDOW, let's
+trace a simple example from HELPSAMP:
+         .
+         .
+         case HLPM_WINDOW:
+             switch(idTopic)
+             {
+                 /* List identifiers of dialog boxes with help buttons */
+                 case IDD_ABOUT:
+                     switch(idSubTopic)
+                     {
+                        /* list all identifiers for those help buttons here*/
+                         case IDD_ABOUT_HELP:
+                             usStringNum = idSubTopic;
+                             break;
+
+                         default:
+                             usStringNum = DEFAULT_HELP;
+                     }
+                     break;
+
+                 /* List all Message Boxes IDs with help Buttons */
+                 case MSGBOX_ID1:
+                 case MSGBOX_ID2:
+
+         .
+         .
+
+Say the user has opened the About dialog box, IDD_ABOUT, and presses
+the pushbutton, IDD_ABOUT_HELP, requesting help. HelpHook will be
+called with usMode = HLPM_WINDOW.
+
+The next switch statement will have idTopic equal to IDD_DIALOG, the
+dialog box itself. Since it is one of the dialog boxes we want to
+give help on, we fall into the next switch statement, checking the
+sub-topic. idSubTopic will contain the value of the pushbutton
+generating the help message, IDD_ABOUT_HELP. This informs us the user
+wants help on the About Box dialog. Since this is one of the
+available help topics (case IDD_ABOUT_HELP), we assign usStringNum
+the id of the pushbutton itself, IDD_ABOUT_HELP.
+
+Falling all the way out of the case statement, we reach the
+WinLoadString function which will load string IDD_ABOUT_HELP into
+pszHelpTopic. The string associated with id IDD_ABOUT_HELP is "About
+Box". Finally HelpBox is called with this context, resulting in help
+on the About dialog box. Simple!
+
+Here now is the one little caveat I alluded to earlier. Notice I kept
+mentioning "If the user presses the pushbutton". PRESS is the
+operative word. When a help message is generated, it passes the
+window handle of the window that had the focus when the message is
+generated. In the case of using a mouse, focus will always be on the
+button that was pushed. However, if the user presses the F1
+accelerator key, a WM_HELP message will be generated with a
+idSubTopic of whatever window had the focus. This could be an OK
+button, a list box, or any other control in your dialog box! You can
+resolve this MANY, MANY ways. You can create a local accelerator
+table for your dialog box, you can trap all keyboard input, etc. The
+easiest way I have found is to trap the WM_HELP message that is
+generated, massage its parameters, THEN pass it on to WInDefDlgProc.
+Here is the code bit from HELPSAMPs AboutDlgProc that does the dirty
+work:
+
+         .
+         .
+         case WM_HELP:    /* process HELP msg only if F1 was pressed */
+            if(SHORT1FROMMP(mp2) == CMDSRC_ACCELERATOR)  /* means F1 was pressed */
+             {
+                 /* Force focus to HELP button */
+                 WinSetFocus(HWND_DESKTOP, WinWindowFromID(hwnd, IDD_ABOUT_HELP));
+
+                 /* pass on the message modified for button */
+                 return(WinDefDlgProc(hwnd,
+                              WM_HELP,
+                              MPFROMSHORT((SHORT)IDD_ABOUT_HELP),
+                              MPFROM2SHORT((SHORT)CMDSRC_PUSHBUTTON, FALSE)));
+             }
+             break;
+
+The lowword of mp2 of a WM_HELP message tells you the source of the
+help message. If the value is CMDSRC_ACCELERATOR, this message was
+posted because the user pressed an accelerator key. These are the
+ONLY WM_HELP messages we will process. Otherwise we pass them right
+on.
+
+Next we reset the focus to the help button itself. Then we pass
+the message on to WinDefDlgProc, after altering mp1 and mp2 to
+make HelpHook think the message was created by the pushbutton and NOT
+the accelerator.
+
+In reality, there is probably an easier way to do this. I haven't
+taken the time though as this seems to work just fine. If you find a
+cleaner way, let me know!
+
+
+II.2.D.3) Help for Message Boxes
+
+Message boxes follow the same basic pattern as help for dialog boxes.
+When you create a message box with MB_HELP style, PM kindly puts a
+help button in the box for you. Your window procedure never gets the
+resulting WM_HELP message though, if the user presses the button! You
+MUST install a help hook if you want to give help for message boxes.
+The only real good reason I see for help in message boxes is things
+like error messages. Say you determine an error has occurred and you
+flash up a message box. You might want to give the user more help as
+to what the error means and how to resolve it.
+
+Another important thing to remember about help for messages boxes:
+EVERY message box you create must have a UNIQUE identifier if you
+want to display different help messages. The identifier of the
+message box is the 5th parameter to the WinMessageBox call. In
+HELPSAMP I defined two constants, MSGBOX_ID1 and MSGBOX_ID2, that get
+passed to WinMessageBox.
+
+Here is one of the calls from HELPSAMP:
+
+         case IDM_MESSAGE_2:
+             WinMessageBox(HWND_DESKTOP, hwnd,
+                 (PSZ)"Press F1 for help on Message Box 2",
+                 (PSZ)"Message Box 2", (USHORT)MSGBOX_ID2,
+                  MB_OK|MB_HELP);
+             return 0;
+
+Notice the message box identifier (MSGBOX_ID2) and the message box
+style includes MB_HELP.
+
+Lets follow this example further. Say the user opens the message box
+and presses the HELP button. Here is the code from HelpHook:
+
+         .
+         .
+         case HLPM_WINDOW:
+             switch(idTopic)
+             {
+                 /* List identifiers of dialog boxes with help buttons */
+                 case IDD_ABOUT:
+                     switch(idSubTopic)
+                     {   .
+                         .
+                         .
+
+                 /* List all Message Boxes IDs with help Buttons */
+                 case MSGBOX_ID1:
+                 case MSGBOX_ID2:
+                     usStringNum = idTopic;
+                     break;
+
+                 default:
+                     usStringNum = DEFAULT_HELP;
+             }
+         .
+         .
+
+HelpHook will be called with usMode = HLPM_WINDOW. The next switch
+statement will have idTopic equal to the message box identifier. NOTE
+there is no subtopic!! Since idTopic contains the identifier we want,
+MSGBOX_ID2, we assign usStringNum to idTopic.
+
+Falling out of the case brings us to the WinLoadString call. It will
+load the string identified by MSGBOX_ID2 into pszHelpTopic. The
+string is "Message Box 2" and this gets passed on to HelpBox.
+
+The only warning I can give is make sure all your message boxes have
+UNIQUE ids.
+
+
+
+II.2.E)  Compiling and Testing
+
+Now that you have added all this code to your app, go compile it! Be
+sure to link HELPLIB.LIB with our application. You should have copied
+HELPLIB.LIB somewhere your compiler will have found it, and
+HELPLIB.DLL somewhere your LIBPATH points to.
+
+To test your app, put it through the same paces you tested your file
+under QuickHelp with. Test chaining of help, resizing of windows,
+minimizing your app (the help box should minimize too!), KEYS help,
+all the special keys, etc. REALLY put it through its paces. I haven't
+seen problems until after I really worked it hard.
+
+
+
+
+III) Final Words !!!
+
+III.1) Distribution (AGAIN!!)
+
+Once again, I have no problem with you distributing HELPLIB.DLL with
+your apps. PLEASE reread the section earlier regarding the
+distribution of MSHELP.DLL.
+
+III.2) I want to see your apps!
+
+I am real interested in seeing your PM apps, whether you use
+HELPLIB.DLL or not. If you have neat stuff going on, drop me a line
+via CompuServe.
+
+If you do decide to use HELPLIB.DLL, I REALLY want to see your app. I
+am real interested in seeing how people implement it.
+
+If you are going to sell your application with HELPLIB.DLL, PLEASE
+let me know. I have no desire for payment, just the gratification in
+knowing someone is using my DLL.
+
+III.3) The future of HELPLIB.DLL
+
+Lots of things are planned, if I have the time!!
+
+First and foremost, all the source for HELPLIB.DLL will be on
+Compuserve next week. I am going on vacation tomorrow and have yet to
+finish the documentation. I DO PROMISE TO UPLOAD IT!!
+
+I would like to add a bunch of things to HELPLIB, like full QuickHelp
+compatibility, hypertext links, and graphics capabilities. Some of
+these things are planned soon, others as people demand it. The
+QuickHelp compatibility tends to be a problem as I have NO
+documentation on the MSHELP.DLL functions. There are lots of
+functions in there I would love to know how to access. (can anyone
+at Microsoft "help" me out here ????). I also want to add the
+capabilities to access multiple help files on the fly. This shouldn't
+be too hard.
+
+
+The way I implemented help in HELPSAMP is just one way to do it. It
+may not be the most efficient, the most elegant, etc. but it works.
+If you come up with a cleaner neater way, let me know. Remember,
+HelpBox just needs a string and a file name. How you get those are up
+to you!!
+
+
+
+III.4) Contacting me
+
+Any comments you have for HELPLIB.DLL are always appreciated, good or
+bad. Any additional features, bugs, etc. you find can be sent to me
+via Compuserve. I usually can be found somewhere in MSSYS or
+PC_MAGNET. 
+
+My user id is 75470,716. Mail me your ideas, comments etc.
+
+Alternatively, I can be reached via U.S. mail at:
+
+Andy Levine
+9737 Windy Ridge Rd
+Frisco, Tx 75034
+

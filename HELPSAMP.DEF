@@ -1,0 +1,14 @@
+;-------------------------------------
+; HELPSAMP.DEF module definition file
+;-------------------------------------
+
+NAME           HELPSAMP  WINDOWAPI
+
+DESCRIPTION    'Sample Help program using MSHELP.DLL(C) Andy Levine, 1989'
+PROTMODE
+HEAPSIZE       1024
+STACKSIZE      8192
+EXPORTS        ClientWndProc
+               AboutDlgProc
+               HelpHook
+
